@@ -1,0 +1,13 @@
+<ChronosLab>
+  <problem
+    type="mech"
+  />
+
+  <!--preconditioner
+    tspace_ntv="6"
+    tspace_iter="100"
+    smooth_type="lightFSAI"
+    coars_tau="-30.0"
+    prolo_smooth="EMIN"
+  /!-->
+</ChronosLab>

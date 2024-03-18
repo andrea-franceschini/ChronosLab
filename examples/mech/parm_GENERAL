@@ -1,0 +1,4 @@
+PCG         % solv_method (PCG or STAT_AMG or BICGSTAB)
+15000       % itmax
+1.e-8       % tol
+100         % restart (GMRES only)
