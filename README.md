@@ -68,7 +68,7 @@ The code uses the following parameters:
 ## Terms of usage ##
 **ChronosLab** is an open source software under the MIT license and can be
 freely downloaded and modified, provided the changes are distributed under the
-same license. See the details in LICENSE.txt.
+same license. See the details in [LICENSE](LICENSE).
 
 If you use **ChronosLab** in your research, please cite it. A few overview
 references are provided here for your convenience:
