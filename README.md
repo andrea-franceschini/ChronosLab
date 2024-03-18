@@ -61,9 +61,36 @@ Giambellino 7, 35129 Padova, Italy);
   at [University of Padova](https://www.unipd.it/en).
 
 ## Parameters ##
-The code uses the following parameters:
+The parameters needed to set-up the AMG preconditioner in ChronosLab are the following:
 
-* problem ...
+* **problem type** can be either **mech** or **lapl** and denotes the origin of the linear
+  system at hand. The first one sets the default for mechanical problems, the second one
+  for system arising from the discretization of Laplace equations.
+* **tspace_ntv** is the number of test vector (approximation of the near kernel) of the problem
+  at hand. In general the size of the test space equals the size of the test space that is
+  given as input but can be overwritten by the user through **tspace_ntv**. If there is no
+  test space as input, the default value is 1.
+* **tspace_iter** is the number of iterations of SRQCG (Simultaneous minimization of
+  the Rayleight Quotient though CG). By default the number of iterations is 0.
+* **smooth_type** defines the type of smoother that is used. Possible values are **jacobi**,
+  **ligthFSAI**, **mediumFSAI**, **heavyFSAI** and **nestFSAI**. The first one is the simple
+  Jacobi preconditioner. Those from light to heavy denote different FSAI set-up from the
+  cheapest and less accurate to the more expensive and more accurate. The last one denotes
+  a novel type to compute FSAI that is recommended for highly ill-conditioned problems.
+* **coars_tau** is the strength of connection threshold that is used for coarsening. In case
+  of **mech** problems, the symmetric strength of connection is used with default 0.01.
+  In case of **lapl** problems, the classical strength of connection is used with default
+  0.25.
+* **prolo_smooth** is a parameter used only for **mech** problems and can take value **none**
+  if the prolongation is not improved by smoothing, **smooth** if the prolongation is smoothed
+  and **emin** if the prolongation is improved by energy minimization. The default value is
+  **emin**
+
+There are other parameters in ChronosLab that an advanced user can access to better tune
+the AMG set-up on the problem at hand. These parameters and their meaning can be found by
+inspecting the main driver in each folder (e.g. coarsen.m in the folder coarsen, tspace.m
+in the folder tspace, etc.). Moreover the FSAI smoother can be also used as stand-alone
+preconditioner.
 
 ## Terms of usage ##
 **ChronosLab** is an open source software under the MIT license and can be
