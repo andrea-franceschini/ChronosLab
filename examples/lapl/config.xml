@@ -1,11 +1,8 @@
 <ChronosLab>
-  <problem
-    type="lapl"
-  />
+  <problem type="lapl"/>
   <preconditioner
     tspace_ntv="1"
     smooth_type="lightFSAI"
-    coars_tau="-30.0"
-    prolo_smooth="EMIN"
+    coars_tau="0.25"
   />
 </ChronosLab>
