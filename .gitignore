@@ -31,11 +31,6 @@
 *.out
 *.app
 
-# VTK files
-*.vtu
-*.vtm
-*.pvd
-
 # Matlab files
 *.mat
 
