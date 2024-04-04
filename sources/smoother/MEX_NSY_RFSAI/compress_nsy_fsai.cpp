@@ -1,10 +1,5 @@
 #include "compress_nsy_fsai.h"
 
-
-
-
-
-
 int compress_nsy_fsai(const int nn, int &nt_FL, int &nt_FU,
                       int *&iat_FL, int *&ja_FL, int *&iat_FU, int *&ja_FU,
                       double *&coef_FL, double *&coef_FU){
@@ -22,12 +17,12 @@ int compress_nsy_fsai(const int nn, int &nt_FL, int &nt_FU,
    if (iat_FL_new == nullptr || ja_FL_new == nullptr || coef_new == nullptr ||
        iat_FU == nullptr){
 
-      cout << "Allocation Error in compress_nsy_fsai" << endl;
+      std::cout << "Allocation Error in compress_nsy_fsai" << std::endl;
       return 1;
    }
 
 
-   fill_n(iat_FU,nn+1,0);
+   std::fill_n(iat_FU,nn+1,0);
 
 
    nt_FL = 0;

@@ -4,8 +4,6 @@
 
 #include <iostream>
 
-using namespace std;
-
 #include "mex.h"
 #include "BAMG.h"
 #include "BAMG_params.h"
@@ -15,9 +13,9 @@ int cpt_Prolongation_BAMG(const int level, const BAMG_params params, const int n
                           const int nn_S, const int nt_S, const int *const iat_S,
                           const int *const ja_S, const int *const coef_S, const int ntv,
                           const int *const fcnodes, const double *const *const TV,
-                          const int nc_I, int &nt_I, vector<int> &vec_iat_I,
-                          vector<int> &vec_ja_I, vector<double> &vec_coef_I,
-                          vector<int> &vec_c_mark){
+                          const int nc_I, int &nt_I, std::vector<int> &vec_iat_I,
+                          std::vector<int> &vec_ja_I, std::vector<double> &vec_coef_I,
+                          std::vector<int> &vec_c_mark){
 
 
    iReg nn_L = 0;
@@ -94,24 +92,10 @@ void mexFunction( int nlhs, mxArray *plhs[],
       }
    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
    int nt_I;
-   vector<int> vec_iat_I,vec_ja_I;
-   vector<double> vec_coef_I;
-   vector<int> vec_c_mark;
+   std::vector<int> vec_iat_I,vec_ja_I;
+   std::vector<double> vec_coef_I;
+   std::vector<int> vec_c_mark;
    int ierr = cpt_Prolongation_BAMG(level,params,np,nn_S,nt_S,iat_S,ja_S,coef_S,
                                     ntv,fcnodes,TV_2D,nc_I,nt_I,vec_iat_I,vec_ja_I,
                                     vec_coef_I,vec_c_mark);

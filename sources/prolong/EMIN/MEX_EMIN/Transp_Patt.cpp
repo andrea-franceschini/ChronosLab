@@ -2,7 +2,6 @@
 #include <omp.h>
 
 #include <iostream>
-using namespace std;
 
 
 #include "count_rowterms.h"
@@ -41,9 +40,10 @@ int Transp_Patt(const int nthreads, const int nrows, const int ncols, const int 
    #pragma omp parallel num_threads(nthreads)
    {
 
+      int loc_nthreads = omp_get_num_threads();
       int mythid = omp_get_thread_num();
-      int bsize = nrows/nthreads;
-      int resto = nrows%nthreads;
+      int bsize = nrows/loc_nthreads;
+      int resto = nrows%loc_nthreads;
       int firstrow, nrowsth, lastrow;
       if (mythid <= resto) {
          nrowsth = bsize+1;
@@ -68,8 +68,8 @@ int Transp_Patt(const int nthreads, const int nrows, const int ncols, const int 
       #pragma omp barrier
 
 
-      bsize = ncols/nthreads;
-      resto = ncols%nthreads;
+      bsize = ncols/loc_nthreads;
+      resto = ncols%loc_nthreads;
       int firstrow_T, nrowsth_T;
       if (mythid <= resto) {
          nrowsth_T = bsize+1;
@@ -81,11 +81,11 @@ int Transp_Patt(const int nthreads, const int nrows, const int ncols, const int 
       }
 
 
-      mkiat_Tloc(nrowsth_T,ncols,nthreads,firstrow_T,WI1,&iat_T[firstrow_T],WI2[mythid]);
+      mkiat_Tloc(nrowsth_T,ncols,loc_nthreads,firstrow_T,WI1,&iat_T[firstrow_T],WI2[mythid]);
       #pragma omp barrier
 
 
-      mkiat_Tglo(mythid,nrowsth_T,ncols,nthreads,firstrow_T,WI1,WI2,&iat_T[firstrow_T]);
+      mkiat_Tglo(mythid,nrowsth_T,ncols,loc_nthreads,firstrow_T,WI1,WI2,&iat_T[firstrow_T]);
       #pragma omp barrier
 
 

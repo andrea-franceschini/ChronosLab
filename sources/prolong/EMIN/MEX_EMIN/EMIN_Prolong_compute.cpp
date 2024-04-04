@@ -7,7 +7,6 @@
 #endif
 
 #include <iostream>
-//using namespace std;
 
 #include "mex.h"
 #include "EMIN_ImpProl.h"

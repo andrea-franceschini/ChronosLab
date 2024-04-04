@@ -1,8 +1,4 @@
-
-
 #pragma once
-
-using namespace std;
 
 
 void mkiat_Tloc (const int nrows, const int nequ, const int nthreads, const int firstrow,

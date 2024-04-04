@@ -30,7 +30,7 @@ else
 end
 param = parse_xml(file_XML,ntv0);
 param.symm = issymmetric(A);
-param.VERBOSE = 0;
+param.VERBOSE = 10;
 
 fprintf('END INPUT\n\n');
 

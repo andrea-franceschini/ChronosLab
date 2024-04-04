@@ -39,7 +39,7 @@ int cpt_nsy_rfsai(const int nstep, const int step_size, const double eps, const 
    if ( rhs_L_sav == nullptr || rhs_U_sav == nullptr ) return 2;
 
 
-   fill_n(JWN,nn_A,0);
+   std::fill_n(JWN,nn_A,0);
 
 
    int ind_FL = 0;
@@ -102,7 +102,8 @@ int cpt_nsy_rfsai(const int nstep, const int step_size, const double eps, const 
 
 
             if (!null_L || !null_U){
-               lapack_int info = LAPACKE_dgetrf(LAPACK_ROW_MAJOR,mrow,mrow,full_A,mrow,
+               lapack_int l_mrow = static_cast<lapack_int>( mrow );
+               lapack_int info = LAPACKE_dgetrf(LAPACK_ROW_MAJOR,l_mrow,l_mrow,full_A,l_mrow,
                                                 ipvt);
                if (info != 0) return 3;
 
@@ -119,13 +120,17 @@ int cpt_nsy_rfsai(const int nstep, const int step_size, const double eps, const 
 
 
             if (!null_L){
-               lapack_int info = LAPACKE_dgetrs(LAPACK_ROW_MAJOR,'T',mrow,1,full_A,mrow,
-                                                ipvt,rhs_L,1);
+               lapack_int l_mrow = static_cast<lapack_int>( mrow );
+               lapack_int l_one = static_cast<lapack_int>( 1 );
+               lapack_int info = LAPACKE_dgetrs(LAPACK_ROW_MAJOR,'T',l_mrow,1,full_A,l_mrow,
+                                                ipvt,rhs_L,l_one);
                if (info != 0) return 3;
             }
             if (!null_U){
-               lapack_int info = LAPACKE_dgetrs(LAPACK_ROW_MAJOR,'N',mrow,1,full_A,mrow,
-                                                ipvt,rhs_U,1);
+               lapack_int l_mrow = static_cast<lapack_int>( mrow );
+               lapack_int l_one = static_cast<lapack_int>( 1 );
+               lapack_int info = LAPACKE_dgetrs(LAPACK_ROW_MAJOR,'N',l_mrow,1,full_A,l_mrow,
+                                                ipvt,rhs_U,l_one);
                if (info != 0) return 3;
             }
 

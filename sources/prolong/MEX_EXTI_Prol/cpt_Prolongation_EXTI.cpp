@@ -64,7 +64,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
    int *iat_I,*ja_I;
    double *coef_I;
    int ierr = cpt_Prolongation_EXTI(level,np,vecstart,nn_A,nt_A,iat_A,ja_A,coef_A,
-		                            coef_S,iat_C,ja_C,coef_C,fcnodes,nn_I,nc_I,nt_I,
+                                    coef_S,iat_C,ja_C,coef_C,fcnodes,nn_I,nc_I,nt_I,
                                     iat_I,ja_I,coef_I);
 
 

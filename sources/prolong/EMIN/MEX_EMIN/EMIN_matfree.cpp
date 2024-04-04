@@ -2,7 +2,6 @@
 #include <omp.h>
 #include <cmath>
 #include <chrono>
-using namespace std;
 
 #if defined PRINT
 #define dump true
@@ -34,8 +33,9 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
 
    int ierr = 0;
 
-   chrono::time_point<std::chrono::system_clock> start, end;
-   chrono::duration<double> elaps_sec;
+   std::chrono::time_point<std::chrono::system_clock> start, end;
+   std::chrono::duration<double> elaps_sec;
+   printf("step 0\n");
 
    int *iat_Tpatt = (int*) malloc( (nn_C+1)*sizeof(int) );
    int *ja_Tpatt  = (int*) malloc( nt_patt*sizeof(int) );
@@ -47,19 +47,20 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    ierr = Transp_Patt(np,nn,nn_C,nt_patt,iat_patt,ja_patt,iat_Tpatt,ja_Tpatt,perm,
                       iperm);
    if (ierr != 0) return ierr = 1;
+   printf("step 1\n");
 
    int nnz_J = 0;
    double *D_inv = nullptr;
    double time_prec_K = 0.0;
 
-   start = chrono::system_clock::now();
+   start = std::chrono::system_clock::now();
    D_inv = (double*) malloc( nt_patt*sizeof(double) );
    double *scr = (double*) malloc( nn*sizeof(double) );
    if (D_inv == nullptr || scr == nullptr) return ierr = 3;
    load_Jacobi(np,nn,nt_patt,iat_Tpatt,ja_Tpatt,iat_A,ja_A,coef_A,scr,D_inv);
    free(scr);
    nnz_J = nt_patt;
-   end = chrono::system_clock::now();
+   end = std::chrono::system_clock::now();
    elaps_sec = end - start;
    time_prec_K = elaps_sec.count();
    if (DUMP_PREC){
@@ -68,9 +69,10 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
       fflush(dfile);
       fclose(dfile);
    }
+   printf("step 2\n");
 
 
-   if (dump) cout << "---- COPY PROL ----" << endl << endl;
+   if (dump) std::cout << "---- COPY PROL ----" << std::endl << std::endl;
    double *coef_P0 = (double*) calloc( nt_patt , sizeof(double) );
    if (coef_P0 == nullptr) return ierr = 1;
    copy_Prol(np,nn,fcnode,iat_Pin,ja_Pin,coef_Pin,iat_patt,ja_patt,coef_P0);
@@ -82,9 +84,10 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
       wrCSRmat(extPfile,false,nn,iat_patt,ja_patt,coef_P0);
       fclose(extPfile);
    }
+   printf("step 3\n");
 
-   if (dump) cout << "---- gather_B_Qr ----" << endl << endl;
-   start = chrono::system_clock::now();
+   if (dump) std::cout << "---- gather_B_Qr ----" << std::endl << std::endl;
+   start = std::chrono::system_clock::now();
    double *mat_Q = nullptr;
    double *vec_f = nullptr;
    if (DUMP_PREC){
@@ -100,6 +103,7 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
                       mat_Q,coef_P0);
    if (ierr != 0) return ierr = 4;
    int nnz_Q = ntv*iat_patt[nn];
+   printf("step 4\n");
 
    int nrows_Q = iat_patt[nn];
    vec_f = (double*) malloc( nrows_Q*sizeof(double) );
@@ -122,7 +126,8 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
        gather_f(iend-istart,&(ja_Tpatt[istart]),iend_A-istart_A,&(ja_A[istart_A]),
                 &(coef_A[istart_A]),&(vec_f[istart]));
    }
-   end = chrono::system_clock::now();
+   printf("step 5\n");
+   end = std::chrono::system_clock::now();
    elaps_sec = end - start;
    double time_gath_B = elaps_sec.count();
    if (DUMP_PREC){
@@ -146,8 +151,8 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
 
    int iter;
 
-   if (dump) cout << "---- DEFL_PCG_matfree ----" << endl << endl;
-   start = chrono::system_clock::now();
+   if (dump) std::cout << "---- DEFL_PCG_matfree ----" << std::endl << std::endl;
+   start = std::chrono::system_clock::now();
 
    double *DP = (double*) malloc( nt_patt*sizeof(double) );
    if (DP == nullptr) return ierr = 1;
@@ -155,11 +160,9 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    ierr = DEFL_PCG_matfree(np,nn,nn_C,nt_patt,ntv,perm,iperm,D_inv,iat_A,ja_A,coef_A,Tr_A,
                            iat_patt,ja_patt,mat_Q,coef_P0,vec_f,itmax,en_tol,iter,DP);
    if (ierr != 0) return ierr = 5;
-   end = chrono::system_clock::now();
+   end = std::chrono::system_clock::now();
    elaps_sec = end - start;
    double time_PCG = elaps_sec.count();
-
-   //cout << "PCG TIME "<< time_PCG << endl;
 
    #pragma omp parallel for num_threads(np)
    for (int i = 0; i < nt_patt; i++) coef_P0[i] -= DP[i];

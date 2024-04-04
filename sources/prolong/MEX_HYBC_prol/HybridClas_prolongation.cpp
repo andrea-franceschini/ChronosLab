@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include "omp.h"
-using namespace std;
 
 #include "MIS.h"
 #include "ProlStripe_HybridClas.h"
@@ -57,8 +56,8 @@ int HybridClas_prolongation(const int level, const int nthreads,
       ierr_L = ProlStripe_HybridClas(firstrow,lastrow,nn_loc,nn_A,nt_A,nt_Imax,
                                      iat_A,ja_A,coef_A,coef_S,fcnodes,nt_I_loc,
                                      iat_scr,ja_scr,coef_scr);
-      #pragma omp atomic update
-      ierr += ierr_L;
+      #pragma omp atomic
+      ierr = ierr + ierr_L;
 
 
       ridv_i[myid+1] = nt_I_loc;

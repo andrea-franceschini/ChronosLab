@@ -8,8 +8,8 @@
 void get_cond(const rExt condmax, const iReg n, const iReg m, rExt **A,
               iReg &rank, rExt &cond){
 
-   iReg maxrank = min(n,m);
-   rExt wrot[m];
+   iReg maxrank = std::min(n,m);
+   rExt * wrot = new rExt[m];
 
 
    rank = 1;
@@ -53,4 +53,5 @@ void get_cond(const rExt condmax, const iReg n, const iReg m, rExt **A,
 
    }
 
+   delete [] wrot;
 }

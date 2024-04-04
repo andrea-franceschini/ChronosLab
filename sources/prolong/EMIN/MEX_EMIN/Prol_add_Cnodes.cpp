@@ -20,9 +20,10 @@ int Prol_add_Cnodes(const int np, const int nn, const int nn_C,
    #pragma omp parallel num_threads(np)
    {
 
+      int loc_nthreads = omp_get_num_threads();
       int mythid = omp_get_thread_num();
-      int bsize = nn/np;
-      int resto = nn%np;
+      int bsize = nn/loc_nthreads;
+      int resto = nn%loc_nthreads;
       int firstrow, nrowth, lastrow;
       if (mythid <= resto) {
          nrowth = bsize+1;
@@ -44,7 +45,7 @@ int Prol_add_Cnodes(const int np, const int nn, const int nn_C,
       #pragma omp single
       {
          pt_loc[0] = 0;
-         for (int i = 0; i < np; i++ ){
+         for (int i = 0; i < loc_nthreads; i++ ){
             pt_loc[i+1] += pt_loc[i];
          }
       }
@@ -71,7 +72,7 @@ int Prol_add_Cnodes(const int np, const int nn, const int nn_C,
             }
          }
       }
-      if (mythid == np-1) iat_out[nn] = nt_out;
+      if (mythid == loc_nthreads-1) iat_out[nn] = nt_out;
 
    }
 

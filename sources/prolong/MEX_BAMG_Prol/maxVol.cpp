@@ -8,19 +8,12 @@
 void maxVol(const iReg mmax, const rExt condmax, const iReg itmax, const rExt delta,
             const iReg n, const iReg m, rExt **A, iReg &rank, iReg *list){
 
-   iReg maxrank = min(n,m);
-   maxrank = min(maxrank,mmax);
-   rExt wrot[m];
+   iReg maxrank = std::min(n,m);
+   maxrank = std::min(maxrank,mmax);
+   rExt * wrot = new rExt[m];
 
 
    rank = 1;
-
-
-
-
-
-
-
 
    iReg irow;
    rExt max_sv_est;
@@ -73,5 +66,7 @@ void maxVol(const iReg mmax, const rExt condmax, const iReg itmax, const rExt de
    } catch (linsol_error) {
       throw linsol_error ("maxVol","permuting row in order to find the best basis");
    }
+
+   delete [] wrot; 
 
 }

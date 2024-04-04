@@ -1,20 +1,18 @@
 #include <stdlib.h>
 #include <omp.h>
 #include <limits>
-#include "cblas.h"
+//#include "cblas.h"
+#include "blas.h"
 #include "lapacke.h"
 
 #include "inl_blas1.h"
 #include <iostream>
 #include <stdio.h>
 
-//using namespace std;
-
 #include "parm_EMIN.h"
 
 #define PRINT_LOC_INFO 0
 #define PRINT_LOC_INFO_ALL 0
-
 
 int gather_B_QR(const int np, const double condmax, const double maxwgt, const int nn,
                 const int nn_C, const int ntv, const int *fcnode, const int *iat_patt,
@@ -27,6 +25,11 @@ int gather_B_QR(const int np, const double condmax, const double maxwgt, const i
    mat_Q = (double*) malloc( nterm_Q*sizeof(double) );
    if (mat_Q == nullptr) return ierr = 3;
 
+   /* form of op(A) & op(B) to use in matrix vector multiplication */
+   char const *chn = "N", *cht = "T";
+   /* scalar values to use in dgemv */
+   double const one = 1.0, mone = -1.0, zero = 0.0;
+   lapack_int const oneint = 1;
 
    int *c2glo = (int*) malloc( nn_C*sizeof(int) );
    double *vec_g = (double*) malloc( nrows_Q*sizeof(double) );
@@ -34,10 +37,13 @@ int gather_B_QR(const int np, const double condmax, const double maxwgt, const i
 
    #pragma omp parallel num_threads(np)
    {
+      lapack_int b_m = 0;
+      lapack_int b_n = 0;
 
+      int loc_nthreads = omp_get_num_threads();
       int mythid = omp_get_thread_num();
-      int bsize = nn/np;
-      int resto = nn%np;
+      int bsize = nn/loc_nthreads;
+      int resto = nn%loc_nthreads;
       int firstcol, ncolth, lastcol;
       if (mythid <= resto) {
          ncolth = bsize+1;
@@ -155,8 +161,12 @@ int gather_B_QR(const int np, const double condmax, const double maxwgt, const i
                for (int j = 0; j < ntv; j++) g_scr[ind_g+j] = TV[icol][j];
 
 
-               cblas_dgemv(CblasColMajor,CblasTrans,nr_BB_loc,ntv,-1.0,&(BB_scr[ind_BB]),
-                           nr_BB_loc,&(coef_P0[istart_patt]),1,1.0,&(g_scr[ind_g]),1);
+               //cblas_dgemv(CblasColMajor,CblasTrans,nr_BB_loc,ntv,-1.0,&(BB_scr[ind_BB]),
+               //            nr_BB_loc,&(coef_P0[istart_patt]),1,1.0,&(g_scr[ind_g]),1);
+               b_m = static_cast<lapack_int>( nr_BB_loc );
+               b_n = static_cast<lapack_int>( ntv );
+               dgemv(cht, &b_m, &b_n, &mone, &(BB_scr[ind_BB]), &b_m,
+                     &(coef_P0[istart_patt]), &oneint, &one, &(g_scr[ind_g]), &oneint);
 
                bool FAIL_QR = false;
                int i_lpk_1, i_lpk_2, i_lpk_3;
@@ -209,9 +219,12 @@ int gather_B_QR(const int np, const double condmax, const double maxwgt, const i
                         goto exit_loop_icol;
                      }
 
-                     cblas_dgemv(CblasColMajor,CblasNoTrans,nr_BB_loc,ntv,1.0,&(BB_scr[ind_BB]),
-                                 nr_BB_loc,&(g_scr[ind_g]),1,1.0,&(coef_P0[istart_patt]),1);
-
+                     //cblas_dgemv(CblasColMajor,CblasNoTrans,nr_BB_loc,ntv,1.0,&(BB_scr[ind_BB]),
+                     //            nr_BB_loc,&(g_scr[ind_g]),1,1.0,&(coef_P0[istart_patt]),1);
+                     b_m = static_cast<lapack_int>( nr_BB_loc );
+                     b_n = static_cast<lapack_int>( ntv );
+                     dgemv(chn, &b_m, &b_n, &one, &(BB_scr[ind_BB]), &b_m,
+                           &(g_scr[ind_g]), &oneint, &one, &(coef_P0[istart_patt]), &oneint);
 
                      nnz_BB = nr_BB_loc*ntv;
 
@@ -247,16 +260,24 @@ int gather_B_QR(const int np, const double condmax, const double maxwgt, const i
                      }
                   }
 
-                  cblas_dgemv(CblasColMajor,CblasNoTrans,rank_BB,ntv,1.0,VT,
-                              ntv,&(g_scr[ind_g]),1,0.0,work,1);
+                  //cblas_dgemv(CblasColMajor,CblasNoTrans,rank_BB,ntv,1.0,VT,
+                  //            ntv,&(g_scr[ind_g]),1,0.0,work,1);
+                  b_m = static_cast<lapack_int>( rank_BB );
+                  b_n = static_cast<lapack_int>( ntv );
+                  dgemv(chn, &b_m, &b_n, &one, VT, &b_n,
+                        &(g_scr[ind_g]), &oneint, &zero, work, &oneint);
 
 
                   for (int i = 0; i < rank_BB; i++) work[i] /= SIGMA[i];
 
 
-                  cblas_dgemv(CblasColMajor,CblasNoTrans,nr_BB_loc,rank_BB,1.0,
-                              &(BB_scr[ind_BB]),nr_BB_loc,work,1,1.0,
-                              &(coef_P0[istart_patt]),1);
+                  //cblas_dgemv(CblasColMajor,CblasNoTrans,nr_BB_loc,rank_BB,1.0,
+                  //            &(BB_scr[ind_BB]),nr_BB_loc,work,1,1.0,
+                  //            &(coef_P0[istart_patt]),1);
+                  b_m = static_cast<lapack_int>( nr_BB_loc );
+                  b_n = static_cast<lapack_int>( rank_BB );
+                  dgemv(chn, &b_m, &b_n, &one, &(BB_scr[ind_BB]), &b_m,
+                        work, &oneint, &one, &(coef_P0[istart_patt]), &oneint);
 
                   int npad = (ntv-rank_BB)*nr_BB_loc;
                   for (int k = 0; k < npad; k++) BB_scr[ind_BB+nr_BB_loc*rank_BB+k] = 0.0;

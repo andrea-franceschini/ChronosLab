@@ -3,6 +3,8 @@
 double ddot_par(const int np, const int nn, const double* __restrict__ x,
                 const double* __restrict__ y, double* __restrict__ reduc){
 
+   for ( int ip = 0; ip < np; ip++ ) reduc[ip] = 0.0;
+
    #pragma omp parallel num_threads(np)
    {
       double ddot = 0.0;

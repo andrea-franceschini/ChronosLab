@@ -2,7 +2,6 @@
 
 #include <math.h>
 #include <algorithm>
-using namespace std;
 
 #include "DEBUG.h"
 #include "ri_sortsplit_nsy.h"

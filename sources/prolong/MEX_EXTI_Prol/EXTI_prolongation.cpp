@@ -1,3 +1,5 @@
+#include <mex.h>
+
 #include <chrono>
 
 #include <stdlib.h>
@@ -60,41 +62,16 @@ int EXTI_prolongation(const int level, const int nthreads,
       coef_scr = new double [nt_Imax]();
       if (coef_scr == NULL) {ierr_L = 1; goto exit_pragma;}
 
+      START_ONE = std::chrono::high_resolution_clock::now();
+      ierr_L = ONELP_ProlStripe_EXTI(firstrow,lastrow,nn_loc,nn_A,nt_A,nt_Imax,
+                                     iat_A,ja_A,coef_A,coef_S,iat_C,ja_C,coef_C,
+                                     fcnodes,nn_I_loc,nt_I_loc,iat_scr,ja_scr,
+                                     coef_scr);
+      END_ONE = std::chrono::high_resolution_clock::now();
+      time_ONE = std::chrono::duration<double>(END_ONE-START_ONE);
 
-#if 1
-         START_ONE = std::chrono::high_resolution_clock::now();
-         ierr_L = ONELP_ProlStripe_EXTI(firstrow,lastrow,nn_loc,nn_A,nt_A,nt_Imax,
-                                        iat_A,ja_A,coef_A,coef_S,iat_C,ja_C,coef_C,
-                                        fcnodes,nn_I_loc,nt_I_loc,iat_scr,ja_scr,
-                                        coef_scr);
-         END_ONE = std::chrono::high_resolution_clock::now();
-         time_ONE = std::chrono::duration<double>(END_ONE-START_ONE);
-         //printf("TIME ONE [s]  = %15.6e\n",time_ONE.count());
-         //printf("\n\n\n\n------------\n\n\n\n");
-#endif
-#if 0
-         START_TWO = std::chrono::high_resolution_clock::now();
-         ierr_L = TWOLP_ProlStripe_EXTI(firstrow,lastrow,nn_loc,nn_A,nt_A,nt_Imax,
-                                        iat_A,ja_A,coef_A,coef_S,iat_C,ja_C,coef_C,
-                                        fcnodes,nn_I_loc,nt_I_loc,iat_scr,ja_scr,
-                                        coef_scr);
-         END_TWO = std::chrono::high_resolution_clock::now();
-         time_TWO = std::chrono::duration<double>(END_TWO-START_TWO);
-         printf("TIME TWO [s]  = %15.6e\n",time_TWO.count());
-         printf("\n\n\n\n------------\n\n\n\n");
-#endif
-#if 0
-         START_OLD = std::chrono::high_resolution_clock::now();
-         ierr_L = ProlStripe_EXTI(firstrow,lastrow,nn_loc,nn_A,nt_A,nt_Imax,
-                                  iat_A,ja_A,coef_A,coef_S,fcnodes,nn_I_loc,nt_I_loc,
-                                  iat_scr,ja_scr,coef_scr);
-         END_OLD = std::chrono::high_resolution_clock::now();
-         time_OLD = std::chrono::duration<double>(END_OLD-START_OLD);
-         printf("TIME OLD [s]  = %15.6e\n",time_OLD.count());
-         printf("\n\n\n\n------------\n\n\n\n");
-#endif
-      #pragma omp atomic update
-      ierr += ierr_L;
+      #pragma omp atomic
+      ierr = ierr + ierr_L;
 
       ridv_i[myid+1] = nt_I_loc;
 
@@ -151,8 +128,8 @@ int EXTI_prolongation(const int level, const int nthreads,
 
       exit_pragma: ;
 
-      #pragma omp atomic update
-      ierr += ierr_L;
+      #pragma omp atomic
+      ierr = ierr + ierr_L;
    }
 
    delete [] ridv_i;

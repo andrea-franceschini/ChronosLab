@@ -4,6 +4,8 @@
 double dnrm2_par(const int np, const int nn, const double* __restrict__ x,
                  double* __restrict__ reduc){
 
+   for ( int ip = 0; ip < np; ip++ ) reduc[ip] = 0.0;
+
    #pragma omp parallel num_threads(np)
    {
       double dnrm2 = 0.0;

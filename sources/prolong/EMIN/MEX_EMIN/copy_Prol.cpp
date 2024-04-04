@@ -11,9 +11,10 @@ void copy_Prol(const int np, const int nn, const int *fcnode, const int *iat_in,
    #pragma omp parallel num_threads(np)
    {
 
+      int loc_nthreads = omp_get_num_threads();
       int mythid = omp_get_thread_num();
-      int bsize = nn/np;
-      int resto = nn%np;
+      int bsize = nn/loc_nthreads;
+      int resto = nn%loc_nthreads;
       int firstrow, nrowth, lastrow;
       if (mythid <= resto) {
          nrowth = bsize+1;

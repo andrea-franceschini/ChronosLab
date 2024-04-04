@@ -2,8 +2,6 @@
 #include <algorithm>
 #include <lapacke.h>
 
-using namespace std;
-
 #include "DEBUG.h"
 #include "KapGrad_NSY.h"
 #include "gather_fullsys.h"

@@ -1,7 +1,6 @@
 #include <omp.h>
 #include <vector>
 #include <iomanip>
-//using namespace std;
 
 #include "precision.h"
 #include "BAMG_params.h"
@@ -12,14 +11,14 @@
 int BAMG ( const BAMG_params &params, const iReg nthreads, iReg nn_L, iReg nn_C,
            iReg nn_S, const iExt *const iat_S, const iReg *const ja_S, const iReg ntv,
            const iReg *const fcnodes, const rExt *const *const TV,
-           iExt &nt_I, vector<iExt> &vec_iat_I, vector<iReg> &vec_ja_I,
-           vector<rExt> &vec_coef_I, vector<iReg> &vec_c_mark ) {
+           iExt &nt_I, std::vector<iExt> &vec_iat_I, std::vector<iReg> &vec_ja_I,
+           std::vector<rExt> &vec_coef_I, std::vector<iReg> &vec_c_mark ) {
 
 
    int ierr = 0;
 
 
-   vector<iExt> vec_ridv_i;
+   std::vector<iExt> vec_ridv_i;
    try {
       vec_ridv_i.resize(nthreads+1);
    } catch (linsol_error) {
@@ -39,14 +38,11 @@ int BAMG ( const BAMG_params &params, const iReg nthreads, iReg nn_L, iReg nn_C,
 
 
    iReg len_count = params.dist_max+3;
-   vector<iReg> dist_count;
+   std::vector<iReg> dist_count;
 
    if (params.verbosity >= VLEV_MEDIUM){
       dist_count.assign(len_count,0);
    }
-
-
-
 
    #pragma omp parallel num_threads(nthreads)
 
@@ -85,13 +81,13 @@ int BAMG ( const BAMG_params &params, const iReg nthreads, iReg nn_L, iReg nn_C,
       firstrow_0    = nn_L;
       firstrow     += nn_L;
       iReg lastrow  = firstrow + nn_loc;
-      iExt nt_Imax  = max(params.mmax,ntv)*nn_loc;
+      iExt nt_Imax  = std::max(params.mmax,ntv)*nn_loc;
       iExt nt_I_loc;
 
 
-      vector<iExt> vec_iat_scr;
-      vector<iReg> vec_ja_scr;
-      vector<rExt> vec_coef_scr;
+      std::vector<iExt> vec_iat_scr;
+      std::vector<iReg> vec_ja_scr;
+      std::vector<rExt> vec_coef_scr;
       try {
          vec_iat_scr.resize(nn_loc+1);
          vec_ja_scr.resize(nt_Imax);
@@ -169,32 +165,10 @@ int BAMG ( const BAMG_params &params, const iReg nthreads, iReg nn_L, iReg nn_C,
       }
 
       exit_omp: ;
-      #pragma omp atomic update
-      ierr += ierr_L;
+      #pragma omp atomic
+      ierr = ierr + ierr_L;
 
    }
-
-
-   //if (params.verbosity >= VLEV_MEDIUM){
-   //   iReg tot_count = 0;
-   //   for (iReg i = 0; i <= params.dist_max+2; i++) tot_count += dist_count[i];
-   //   rExt r_tot_count = 100.0 / static_cast<rExt>(tot_count);
-   //   for (iReg i = 0; i < params.dist_max; i++)
-   //      cout << "# of nodes interp at dist " << setw(4) << i+1 << ":  " <<
-   //      setw(12) << dist_count[i] << " | " << setprecision(2) << setw(6) <<
-   //      static_cast<rExt>(dist_count[i]) * r_tot_count << "%" << endl;
-   //   cout << "# of nodes with high error:      " <<
-   //   setw(12) << dist_count[params.dist_max] << " | " << setprecision(2) <<
-   //   setw(6) << static_cast<rExt>(dist_count[params.dist_max]) * r_tot_count <<
-   //   "%" << endl;
-   //   cout << "# of nodes with large weights:   " << setw(12) <<
-   //   dist_count[params.dist_max+1] << " | " << setprecision(2) << setw(6) <<
-   //   static_cast<rExt>(dist_count[params.dist_max+1]) * r_tot_count << "%" << endl;
-   //   cout << "# of nodes without neighbours:   " << setw(12) <<
-   //   dist_count[params.dist_max+2] << " | " << setprecision(2) << setw(6) <<
-   //   static_cast<rExt>(dist_count[params.dist_max+2]) * r_tot_count << "%" << endl;
-   //   cout << "---------------------------" << endl;
-   //}
 
    return ierr;
 

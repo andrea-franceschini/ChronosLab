@@ -73,7 +73,7 @@ if (DEBUG){
 
 
 
-int ncut = min(lfil,ind_WR);
+int ncut = std::min(lfil,ind_WR);
 ri_sortsplit_nsy(ind_WR,ncut,WR_L,&IWN[mrow]);
 
 

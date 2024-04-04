@@ -28,8 +28,8 @@ void maxVol_inner(const iReg itmax, const rExt delta, const iReg n, const iReg r
 
    iReg irow, jcol;
    rExt zij_max;
-   rExt vcol[n];
-   rExt vrow[r];
+   rExt * vcol = new rExt[n];
+   rExt * vrow = new rExt[r];
 
 
    iReg iter = 0;
@@ -61,4 +61,7 @@ void maxVol_inner(const iReg itmax, const rExt delta, const iReg n, const iReg r
    if (zij_max > 1.0+delta){
      throw linsol_error ("maxVol_inner","convergence not achieved");
    }
+
+   delete [] vcol;
+   delete [] vrow;
 }

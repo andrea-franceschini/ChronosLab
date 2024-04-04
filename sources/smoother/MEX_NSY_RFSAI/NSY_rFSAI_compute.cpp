@@ -1,5 +1,3 @@
-
-
 #if defined PRINT
    bool dump = true;
 #else
@@ -8,16 +6,6 @@
 
 #include "mex.h"
 #include "Compute_nsy_rfsai.h"
-
-
-
-
-
-
-
-
-
-
 
 void mexFunction( int nlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[]){
@@ -44,7 +32,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
    int ierr = Compute_nsy_rfsai(nstep,step_size,epsilon,nn_A,iat_A,ja_A,coef_A,
                                 iat_FL,ja_FL,coef_FL,iat_FU,ja_FU,coef_FU);
    if (ierr != 0){
-      cout << "ERROR in cpt_nsy_sfsai_coef with code: " << ierr << endl;
+      std::cout << "ERROR in cpt_nsy_sfsai_coef with code: " << ierr << std::endl;
       return;
    }
 

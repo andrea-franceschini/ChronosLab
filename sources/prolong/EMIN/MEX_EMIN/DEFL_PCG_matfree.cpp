@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
-using namespace std;
 
 #include "parm_EMIN.h"
 #include "apply_perm.h"

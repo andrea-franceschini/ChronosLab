@@ -6,7 +6,7 @@ void Open_DebugLog(){
 
    if (DEBUG){
       dbfile = fopen("DEBUG","w");
-      if (dbfile == nullptr) cout << "ERROR OPENING DEBUG LOGFILE" << endl;
+      if (dbfile == nullptr) std::cout << "ERROR OPENING DEBUG LOGFILE" << std::endl;
       fprintf(dbfile,"********** INIZIO DEBUG ***********\n\n");
    }
 

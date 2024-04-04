@@ -4,15 +4,14 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
-#include <cblas.h>
 #include <lapacke.h>
 #include <omp.h>
 
 typedef int iReg;
-typedef long int iExt;
+typedef int64_t iExt;
 typedef double rExt;
-typedef int iBlas;
-typedef int iLapack;
+//typedef int iBlas;
+//typedef int iLapack;
 
 rExt cpt_ddot(iReg n, rExt *x1, rExt *x2){
    rExt ddot = 0.;
@@ -50,14 +49,11 @@ if (ncut < first || ncut > last) return;
 while(true){
 
    iReg mid = first;
-   rExt absval = abs( R_vec[mid-1] );
+   rExt absval = std::abs( R_vec[mid-1] );
 
    for (iReg j = first+1; j < last+1; j ++){
 
-
-
-
-      if (abs(R_vec[j-1]) > absval){
+      if (std::abs(R_vec[j-1]) > absval){
          mid += 1;
 
          rExt tmp  = R_vec[mid-1];
@@ -69,7 +65,6 @@ while(true){
       }
    }
 
-
    rExt tmp        = R_vec[mid-1];
    R_vec[mid-1]    = R_vec[first-1];
    R_vec[first-1]  = tmp;
@@ -77,7 +72,6 @@ while(true){
    iReg itmp      = I_vec[mid-1];
    I_vec[mid-1]   = I_vec[first-1];
    I_vec[first-1] = itmp;
-
 
    if (mid == ncut) return;
    if (mid >  ncut){
@@ -142,9 +136,7 @@ void gather_fullsys(bool &nulrhs, iReg irow, iReg mrow, iReg jendbloc, iReg nequ
                     const iReg * const vecinc, const rExt * const mat_A,
                     rExt * const full_A, rExt * const rhs){
 
-
 for (iReg i = 1; i < mrow+1; i++){
-
 
    iReg ii     = i;
    iReg row    = vecinc[i-1];
@@ -152,7 +144,6 @@ for (iReg i = 1; i < mrow+1; i++){
    iExt endrow = iat[row];
 
    while (ii <= mrow){
-
 
       while (ja[jj-1] < vecinc[ii-1]){
          jj += 1;
@@ -237,7 +228,7 @@ for (iReg i = 1; i < mrow+1; i ++){
             JWN[jjcol-1] = ind_WR;
             IWN[mrow+ind_WR-1] = ja[j-1];
             WR[ind_WR-1] = rhs[i-1]*mat_A[j-1];
-	 }else if (ind > 0){
+         }else if (ind > 0){
 
             WR[ind-1] += rhs[i-1]*mat_A[j-1];
          }
@@ -251,11 +242,9 @@ for (iReg i = mrow+1; i < mrow+ncut+1; i ++){
    JWN[IWN[i-1]-1] = -1;
 }
 
-
 for (iReg i = mrow+ncut+1; i < mrow+ind_WR+1; i ++){
    JWN[IWN[i-1]-1] = 0;
 }
-
 
 mrow += ncut;
 iheapsort(IWN,mrow);
@@ -268,9 +257,6 @@ void cpt_afsai_coef(iReg chunk_size, iReg n_step, iReg step_size, rExt tau, rExt
                     iExt * const istop_G, iReg * const ja_G, const rExt * const coef_A,
                     rExt * const coef_G){
 iReg mrow_min = 5;
-if ( sizeof(iReg) != sizeof(iBlas) || sizeof(iReg) != sizeof(iLapack) ){
-   throw "WARNING: check integer kind compatibility with BLAS and LAPACK";
-}
 iReg mmax = n_step * step_size;
 std::vector<iReg> IWN(nequ,0);
 std::vector<iReg> JWN(nequ,0);
@@ -291,7 +277,6 @@ for( iReg irow = 1; irow < nrows+1; irow++){
 
       istep += 1;
 
-
       if ((tau > 0.) && (mrow > mrow_min)){
 
          rhs[mrow] = 1.;
@@ -300,13 +285,13 @@ for( iReg irow = 1; irow < nrows+1; irow++){
 
          iReg ind = 0;
          for (iReg i = 0; i < mrow; i ++){
-            if (abs(rhs[i]) > asstol) {
+            if (std::abs(rhs[i]) > asstol) {
 
                rhs[ind] = rhs[i];
                rhs_sav[ind] = rhs_sav[i];
                IWN[ind] = IWN[i];
                ind += 1;
-	    }else{
+            }else{
 
                JWN[IWN[i]-1] = -1;
             }
@@ -321,32 +306,31 @@ for( iReg irow = 1; irow < nrows+1; irow++){
 
       if (mrow > mrow_old){
 
-
          bool nulrhs;
          gather_fullsys(nulrhs,irow_glo,mrow,irow_glo,nequ,nterm,mmax,iat,ja,IWN.data(),
                         coef_A,full_A.data(),rhs.data());
 
          if (nulrhs == false){
 
-
             lapack_int info;
+            lapack_int l_mrow = static_cast<lapack_int>( mrow );
+            lapack_int l_mmax = static_cast<lapack_int>( mmax );
+            lapack_int l_one = static_cast<lapack_int>( 1 );
+            info = LAPACKE_dpotrf(LAPACK_COL_MAJOR,'L',l_mrow,full_A.data(),l_mmax);
 
-            info = LAPACKE_dpotrf(LAPACK_COL_MAJOR,'L',mrow,full_A.data(),mmax);
 
-	
-	    rhs_sav = rhs;
+            rhs_sav = rhs;
 
-            info = LAPACKE_dpotrs(LAPACK_COL_MAJOR,'L',mrow,1,full_A.data(),mmax,rhs.data(),mrow);
+            info = LAPACKE_dpotrs(LAPACK_COL_MAJOR,'L',l_mrow,l_one,full_A.data(),l_mmax,rhs.data(),l_mrow);
 
          }
 
          rExt DKap_new = cpt_ddot(mrow,rhs.data(),rhs_sav.data());
 
-
          if (istep == n_step){
             Refine = false;
          }else{
-            Refine = (abs(DKap_new-DKap_old) >= eps*DKap_old) && (DKap_new != 0.);
+            Refine = (std::abs(DKap_new-DKap_old) >= eps*DKap_old) && (DKap_new != 0.);
             DKap_old = DKap_new;
          }
 
@@ -358,7 +342,6 @@ for( iReg irow = 1; irow < nrows+1; irow++){
 
    }
 
-
    iExt ind = iat[irow_glo-1];
    while (ja[ind-1] < irow_glo){
       ind += 1;
@@ -368,26 +351,26 @@ for( iReg irow = 1; irow < nrows+1; irow++){
 
    if (scal_fac < 0.){
 
-
       bool nulrhs;
       gather_fullsys(nulrhs,irow_glo,mrow,irow_glo,nequ,nterm,mmax,iat,ja,IWN.data(),
                      coef_A,full_A.data(),rhs.data());
-      lapack_int info;
 
-      info = LAPACKE_dpotrf(LAPACK_COL_MAJOR,'L',mrow,full_A.data(),mmax);
+      lapack_int info;
+      lapack_int l_mrow = static_cast<lapack_int>( mrow );
+      lapack_int l_mmax = static_cast<lapack_int>( mmax );
+      lapack_int l_one = static_cast<lapack_int>( 1 );
+      info = LAPACKE_dpotrf(LAPACK_COL_MAJOR,'L',l_mrow,full_A.data(),l_mmax);
       rhs_sav = rhs;
 
-      info = LAPACKE_dpotrs(LAPACK_COL_MAJOR,'L',mrow,1,full_A.data(),mmax,rhs.data(),mrow);
+      info = LAPACKE_dpotrs(LAPACK_COL_MAJOR,'L',l_mrow,l_one,full_A.data(),l_mmax,rhs.data(),l_mrow);
 
       scal_fac = coef_A[ind-1] - cpt_ddot(mrow,rhs_sav.data(),rhs.data());
    }
 
    scal_fac = 1. / sqrt(scal_fac);
 
-
    iExt ind_G  = istart_G[irow-1];
    iExt ind_G0 = ind_G;
-
 
    for (iReg i = 1; i < mrow+1; i++){
       coef_G[ind_G-1] = scal_fac*rhs[i-1];
@@ -397,13 +380,10 @@ for( iReg irow = 1; irow < nrows+1; irow++){
       JWN[IWN[i-1]-1] = 0;
    }
 
-
    coef_G[ind_G-1] = scal_fac;
    ja_G[ind_G-1]   = irow_glo;
 
-
    istop_G[irow-1] = ind_G;
-
 
    nterm_G += (ind_G - ind_G0) + 1;
 
@@ -415,9 +395,7 @@ void compute_local_fsai(iReg nthread, iReg n_step, iReg step_size, rExt tau, rEx
                         const iReg * const ja_M, const rExt * const coef_M, iExt *nterm_G,
                         iExt *iat_G, iReg *ja_G, rExt *coef_G){
 
-
 iReg chunk_size = nrows / (20*nthread); chunk_size = std::max(1,chunk_size);
-
 
 iExt kmax    = 1 + (iExt) n_step * (iExt) step_size;
 iExt nzmax_G = (iExt) nrows * kmax;
@@ -428,13 +406,11 @@ std::vector<iExt> istop_scr; istop_scr.resize(nrows);
 std::vector<iReg> ja_scr; ja_scr.resize(nzmax_G);
 std::vector<rExt> coef_scr; coef_scr.resize(nzmax_G);
 
-
 iExt ind = 1;
 for ( iReg irow = 0; irow < nrows; irow++ ){
    istart_scr[irow] = ind;
    ind += kmax;
 }
-
 
 nterm_G[0] = 0;
 iReg shift = nrows_M - nrows;
@@ -451,20 +427,14 @@ iReg shift = nrows_M - nrows;
                   ja_scr.data(),coef_M,coef_scr.data());
    double time_2 = omp_get_wtime();
 
-
    #pragma omp atomic
    nterm_G[0] += loc_nt_G;
-
-
 
 }
 
 #pragma omp parallel num_threads(nthread)
 {
-
-
    iReg myid = omp_get_thread_num();
-
 
    iReg my_nrows    = nrows / nthread;
    iReg my_firstrow = myid * my_nrows + 1;
@@ -481,7 +451,6 @@ iReg shift = nrows_M - nrows;
    nt_slice[myid] = kcount;
 
    #pragma omp barrier
-
 
    iExt ind_G  = 1;
    for ( iReg id = 0; id < myid; id++ ) {
@@ -524,8 +493,6 @@ void mexFunction( int nlhs, mxArray *plhs[],
    iReg nrows_M   = mxGetScalar(prhs[6]);
    iExt nterm_M   = mxGetScalar(prhs[7]);
 
-
-
    //mexPrintf("- get input arrays\n");
    iExt *iat_M  = (iExt*) mxGetData(prhs[8]);
    iReg *ja_M   = (iReg*) mxGetData(prhs[9]);
@@ -548,8 +515,6 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
    mxArray *coef_W = mxCreateNumericMatrix((mwSize)1,(mwSize)nzmax_G,mxDOUBLE_CLASS,mxREAL);
    rExt *coef_G = (rExt*) mxGetData(coef_W);
-
-
 
    //mexPrintf("- compute G terms\n");
    compute_local_fsai(nthread,n_step,step_size,tau,eps,nrows,nrows_M,nterm_M,iat_M,

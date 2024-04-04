@@ -3,9 +3,6 @@
 #include <iostream>
 #include <cstring>
 
-
-using namespace std;
-
 #include "extract_diag.h"
 #include "cpt_nsy_rfsai.h"
 #include "compress_nsy_fsai.h"

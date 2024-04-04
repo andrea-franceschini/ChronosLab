@@ -5,8 +5,6 @@
 #include<string>
 #include<iostream>
 
-using namespace std;
-
 #define kB 1024L
 #define MB 1024L*kB
 #define GB 1024L*MB
@@ -29,12 +27,12 @@ class linsol_error{
    public:
 
 
-   linsol_error(const string __restrict__ function_name,
-                const string __restrict__ error_message);
+   linsol_error(std::string const & __restrict__ function_name,
+                std::string const & __restrict__ error_message);
 
 
-   linsol_error(const string __restrict__ function_name,
-                const string __restrict__ error_message,
+   linsol_error(std::string const & __restrict__ function_name,
+                std::string const & __restrict__ error_message,
                 unsigned long int nbytes_requested);
 
 };

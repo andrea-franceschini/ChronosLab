@@ -1,8 +1,6 @@
 #include "omp.h"
 
 #include <iostream>
-using namespace std;
-
 
 typedef int iReg;
 typedef int iExt;

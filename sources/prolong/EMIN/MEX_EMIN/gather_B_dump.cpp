@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <omp.h>
 #include <limits>
-using namespace std;
 
 #include "parm_EMIN.h"
 
@@ -22,9 +21,10 @@ int gather_B_dump(const int np, const int nn, const int nn_C, const int ntv,
    #pragma omp parallel num_threads(np)
    {
 
+      int loc_nthreads = omp_get_num_threads();
       int mythid = omp_get_thread_num();
-      int bsize = nn/np;
-      int resto = nn%np;
+      int bsize = nn/loc_nthreads;
+      int resto = nn%loc_nthreads;
       int firstcol, ncolth, lastcol;
       if (mythid <= resto) {
          ncolth = bsize+1;

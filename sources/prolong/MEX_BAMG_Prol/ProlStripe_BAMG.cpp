@@ -2,7 +2,6 @@
 #include <math.h>
 #include <algorithm>
 #include <lapacke.h>
-using namespace std;
 
 #include "precision.h"
 #include "BAMG_params.h"
@@ -51,10 +50,10 @@ void ProlStripe_BAMG(const BAMG_params& params, iReg firstrow_0, iReg firstrow, 
    optimal_lwork = static_cast<int>(db_lwork);
 
 
-   vector<iReg> vec_int_list;
-   vector<iReg> vec_neigh;
-   vector<iReg> vec_WI;
-   vector<rExt> vec_WR;
+   std::vector<iReg> vec_int_list;
+   std::vector<iReg> vec_neigh;
+   std::vector<iReg> vec_WI;
+   std::vector<rExt> vec_WR;
    try {
       vec_int_list.resize(nn_S);
       vec_neigh.resize(nn_S);
@@ -69,8 +68,8 @@ void ProlStripe_BAMG(const BAMG_params& params, iReg firstrow_0, iReg firstrow, 
    rExt *WR = vec_WR.data();
 
 
-   vector<rExt*> vec_TVcomp;
-   vector<rExt>  vec_TVbuf;
+   std::vector<rExt*> vec_TVcomp;
+   std::vector<rExt>  vec_TVbuf;
    try {
       vec_TVcomp.resize(nn_S+1);
       vec_TVbuf.resize(ntvecs*(nn_S+1));
@@ -203,8 +202,8 @@ void ProlStripe_BAMG(const BAMG_params& params, iReg firstrow_0, iReg firstrow, 
 
                if (VERB_FLAG){
 
-                  #pragma omp atomic update
-                  dist_count[distance-1]++;
+                  #pragma omp atomic
+                  dist_count[distance-1] = dist_count[distance-1] + 1;
                }
 
 
@@ -224,8 +223,8 @@ void ProlStripe_BAMG(const BAMG_params& params, iReg firstrow_0, iReg firstrow, 
                      if (n_int == 0){
                         if (VERB_FLAG){
 
-                           #pragma omp atomic update
-                           dist_count[dist_max+2]++;
+                           #pragma omp atomic
+                           dist_count[dist_max+2] = dist_count[dist_max+2] + 1;
                         }
 
                      } else {
@@ -241,16 +240,16 @@ void ProlStripe_BAMG(const BAMG_params& params, iReg firstrow_0, iReg firstrow, 
                         if (res_row < res_ass){
                            if (VERB_FLAG){
 
-                              #pragma omp atomic update
-                              dist_count[dist_max+1]++;
+                              #pragma omp atomic
+                              dist_count[dist_max+1] = dist_count[dist_max+1] + 1;
                            }
                         } else {
 
                            c_mark[inod] = 1;
                            if (VERB_FLAG){
 
-                              #pragma omp atomic update
-                              dist_count[dist_max]++;
+                              #pragma omp atomic
+                              dist_count[dist_max] = dist_count[dist_max] + 1;
                            }
                         }
                      }
@@ -277,12 +276,12 @@ void ProlStripe_BAMG(const BAMG_params& params, iReg firstrow_0, iReg firstrow, 
                   if (VERB_FLAG){
                      if (res_row > res_ass){
 
-                        #pragma omp atomic update
-                        dist_count[dist_max]++;
+                        #pragma omp atomic
+                        dist_count[dist_max] = dist_count[dist_max] + 1;
                      } else {
 
-                        #pragma omp atomic update
-                        dist_count[dist_max+1]++;
+                        #pragma omp atomic
+                        dist_count[dist_max+1] = dist_count[dist_max+1] + 1;
                      }
                   }
 
